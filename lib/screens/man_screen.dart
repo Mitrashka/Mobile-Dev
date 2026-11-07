@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cubit/main_screen_cubit.dart';
 import 'cubit/main_screen_state.dart';
+import 'saved_calculations_screen_provider.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -17,6 +19,20 @@ class _MainScreenState extends State<MainScreen> {
   final _radiusController = TextEditingController();
   bool _agreement = false;
   String? _agreementError;
+  final _preferences = SharedPreferencesAsync();
+  bool _agreementChanged = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAgreement();
+  }
+
+  Future<void> _loadAgreement() async {
+    final accepted = await _preferences.getBool('personal_data_agreement');
+    if (!mounted || _agreementChanged) return;
+    setState(() => _agreement = accepted ?? false);
+  }
 
   @override
   void dispose() {
@@ -42,7 +58,7 @@ class _MainScreenState extends State<MainScreen> {
     return null;
   }
 
-  void _calculate() {
+  Future<void> _calculate() async {
     final formIsValid = _formKey.currentState!.validate();
     setState(() {
       _agreementError = _agreement ? null : 'Пожалуйста, дайте согласие';
@@ -50,7 +66,7 @@ class _MainScreenState extends State<MainScreen> {
 
     if (!formIsValid || !_agreement) return;
 
-    context.read<MainScreenCubit>().calculateVelocity(
+    await context.read<MainScreenCubit>().calculateVelocity(
       mass: _parseNumber(_massController.text)!,
       radius: _parseNumber(_radiusController.text)!,
     );
@@ -59,7 +75,18 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Долгих Дмитрий Андреевич, вариант 5')),
+      appBar: AppBar(
+        title: const Text('Долгих Дмитрий Андреевич, вариант 5'),
+        leading: IconButton(
+          tooltip: 'Сохранённые расчёты',
+          icon: const Icon(Icons.list_alt),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const SavedCalculationsScreenProvider(),
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -101,11 +128,17 @@ class _MainScreenState extends State<MainScreen> {
                     'персональных данных в соответствии с требованиями '
                     'Федерального закона № 152-ФЗ «О персональных данных».',
                   ),
-                  onChanged: (value) {
+                  onChanged: (value) async {
+                    _agreementChanged = true;
+                    final accepted = value ?? false;
                     setState(() {
-                      _agreement = value ?? false;
+                      _agreement = accepted;
                       _agreementError = null;
                     });
+                    await _preferences.setBool(
+                      'personal_data_agreement',
+                      accepted,
+                    );
                   },
                 ),
                 if (_agreementError != null)
