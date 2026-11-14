@@ -4,10 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cubit/main_screen_cubit.dart';
 import 'cubit/main_screen_state.dart';
+import '../requests/dog_api.dart';
+import 'dog_images_screen_provider.dart';
 import 'saved_calculations_screen_provider.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  const MainScreen({super.key, this.dogApi});
+
+  final DogApi? dogApi;
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -155,6 +159,16 @@ class _MainScreenState extends State<MainScreen> {
                 ElevatedButton(
                   onPressed: _calculate,
                   child: const Text('Рассчитать'),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) =>
+                          DogImagesScreenProvider(api: widget.dogApi),
+                    ),
+                  ),
+                  label: const Text('Показать фото собачек'),
                 ),
                 const SizedBox(height: 24),
                 BlocBuilder<MainScreenCubit, MainScreenState>(
