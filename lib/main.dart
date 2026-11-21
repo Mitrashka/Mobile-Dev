@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 
-import 'screens/main_screns_provider.dart';
+import 'requests/weather_api.dart';
+import 'screens/weather_screen_provider.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, this.weatherApi});
+
+  final WeatherApi? weatherApi;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: const MainScreenProvider());
+    return MaterialApp(home: WeatherScreenProvider(api: weatherApi));
   }
 }

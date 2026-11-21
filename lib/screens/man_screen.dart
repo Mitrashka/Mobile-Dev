@@ -81,15 +81,17 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Долгих Дмитрий Андреевич, вариант 5'),
-        leading: IconButton(
-          tooltip: 'Сохранённые расчёты',
-          icon: const Icon(Icons.list_alt),
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => const SavedCalculationsScreenProvider(),
+        actions: [
+          IconButton(
+            tooltip: 'Сохранённые расчёты',
+            icon: const Icon(Icons.list_alt),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const SavedCalculationsScreenProvider(),
+              ),
             ),
           ),
-        ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
